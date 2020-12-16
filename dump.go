@@ -13,11 +13,11 @@ import (
 )
 
 type DumpCommand struct {
-	Index            string    `required help:"Index filter"`
-	Size             string    `help:"Bulk size" default:"100"`
-	OutputFile       string    `help:"Output file" short:"o" `
-	OutputWriter     io.Writer `kong:"-"`
-	QueryString      string    `help:"Query string to filter results"`
+	Index        string    `required help:"Index filter" short:"i"`
+	QueryString  string    `help:"Query string to filter results" short:"q"`
+	Size         string    `help:"Bulk size" default:"100" short:"s"`
+	OutputFile   string    `help:"Output file" short:"o"`
+	OutputWriter io.Writer `kong:"-"`
 }
 
 func (cmd *DumpCommand) Run(dispatcher *EsQueryDispatcher) (err error) {
@@ -57,7 +57,6 @@ func (cmd *DumpCommand) Run(dispatcher *EsQueryDispatcher) (err error) {
 	}
 	log.Println(fmt.Sprintf("Dumping %s documents :", shellYellow(totalHits)))
 	// Progress bar, yeaaah
-
 	bar := progressbar.New(totalHits)
 	jsonEncoder := json.NewEncoder(cmd.OutputWriter)
 	for _, hit := range scrollResponse.Hits.Hits {

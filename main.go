@@ -11,7 +11,7 @@ var App struct {
 	List  LsCommand   `cmd help:"List indices"`
 	Dump  DumpCommand `cmd help:"Dump indices"`
 	Url   string      `required name:"url" help:"Base Kibana/ES url"`
-	Quiet bool        `short:"q" help:"Quiet mode" default:"false"`
+	Debug bool        `short:"d" help:"Debug mode" default:"false"`
 }
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 		BaseUrl:   App.Url,
 		LogOutput: os.Stderr,
 	}
-	if App.Quiet {
+	if !App.Debug {
 		queryDispatcher.LogOutput = ioutil.Discard
 	}
 	log.SetOutput(queryDispatcher.LogOutput)
