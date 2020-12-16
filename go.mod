@@ -1,4 +1,4 @@
-module gitlab.nobody.run/tbi/estk
+module github.com/LeakIX/estk
 
 go 1.11
 
