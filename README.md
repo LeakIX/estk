@@ -1,4 +1,4 @@
-# estk
+# ES Toolkit
 
 [![GitHub Release](https://img.shields.io/github/v/release/LeakIX/estk)](https://github.com/LeakIX/estk/releases)
 [![Follow on Twitter](https://img.shields.io/twitter/follow/leak_ix.svg?logo=twitter)](https://twitter.com/leak_ix)
