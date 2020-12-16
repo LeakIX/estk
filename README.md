@@ -27,8 +27,8 @@ estk list -h
 
 Displays help for the list command
 
-|Flag           |Description  |Example|
-|-----------------------|-------------------------------------------------------|-------------------------------|
+|Flag           |Description  |
+|-----------------------|-------------------------------------------------------|
 |--url     | Elasticsearch/Kibana root URL |
 
 ### Dump
@@ -39,8 +39,8 @@ estk dump -h
 
 Displays help for the random command (only implementation atm)
 
-|Flag           |Description  |Example|
-|-----------------------|-------------------------------------------------------|-------------------------------|
+|Flag           |Description  |
+|-----------------------|-------------------------------------------------------|
 |--url     | Elasticsearch/Kibana root URL |
 |--index     | Name of the index to dump ( wildcard supported ) |
 |--query-string | Dump specific documents |
