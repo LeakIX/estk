@@ -57,7 +57,7 @@ func (cmd *DumpCommand) Run(dispatcher *EsQueryDispatcher) (err error) {
 	}
 	log.Println(fmt.Sprintf("Dumping %s documents :", shellYellow(totalHits)))
 	// Progress bar, yeaaah
-	bar := progressbar.New(totalHits)
+	bar := progressbar.Default(int64(totalHits))
 	jsonEncoder := json.NewEncoder(cmd.OutputWriter)
 	for _, hit := range scrollResponse.Hits.Hits {
 		bar.Add(1)
