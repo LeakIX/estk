@@ -19,25 +19,25 @@ wide range of Elasticsearch and Kibana versions.
 
 ## Usage
 
-### List
+### List index
 
 ```
 estk list -h
 ```
 
-Displays help for the list command
+Displays help for the list command.
 
 |Flag           |Description  |
 |-----------------------|-------------------------------------------------------|
 |--url     | Elasticsearch/Kibana root URL |
 
-### Dump
+### Dump index
 
 ```
 estk dump -h
 ```
 
-Displays help for the random command (only implementation atm)
+Displays help for the dump command.
 
 |Flag           |Description  |
 |-----------------------|-------------------------------------------------------|
