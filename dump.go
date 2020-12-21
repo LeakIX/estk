@@ -24,7 +24,7 @@ func (cmd *DumpCommand) Run(dispatcher *EsQueryDispatcher) (err error) {
 	log.Println("Dump starting...")
 	log.Println("Endpoint : " + shellYellow(dispatcher.BaseUrl))
 	log.Println("Index : " + shellYellow(cmd.Index))
-	scrollUrl := "/%s/_search?scroll=5m"
+	scrollUrl := "/" + cmd.Index + "/_search?scroll=5m"
 	if len(cmd.QueryString) > 0 {
 		scrollUrl += "&q=" + url.QueryEscape(cmd.QueryString)
 	}
@@ -44,7 +44,7 @@ func (cmd *DumpCommand) Run(dispatcher *EsQueryDispatcher) (err error) {
 	}
 	scrollResponse := &ScrollResponse{}
 
-	err, _ = dispatcher.ESRequest("POST", fmt.Sprintf(scrollUrl, cmd.Index), scrollResponse, scrollRequest)
+	err, _ = dispatcher.ESRequest("POST", scrollUrl, scrollResponse, scrollRequest)
 	if err != nil {
 		return err
 	}
