@@ -17,6 +17,7 @@ type DumpCommand struct {
 	QueryString  string    `help:"Query string to filter results" short:"q"`
 	Size         string    `help:"Bulk size" default:"100" short:"s"`
 	OutputFile   string    `help:"Output file" short:"o"`
+	ScrollId     string    `help:"Scroll ID used to resume a dump" default:"" short:"S"`
 	OutputWriter io.Writer `kong:"-"`
 }
 
@@ -24,10 +25,10 @@ func (cmd *DumpCommand) Run(dispatcher *EsQueryDispatcher) (err error) {
 	log.Println("Dump starting...")
 	log.Println("Endpoint : " + shellYellow(dispatcher.BaseUrl))
 	log.Println("Index : " + shellYellow(cmd.Index))
-	scrollUrl := "/" + cmd.Index + "/_search?scroll=5m"
-	if len(cmd.QueryString) > 0 {
-		scrollUrl += "&q=" + url.QueryEscape(cmd.QueryString)
-	}
+
+	scrollResponse := &ScrollResponse{}
+	var totalHits int
+	var bar *progressbar.ProgressBar
 	if len(cmd.OutputFile) > 0 {
 		cmd.OutputWriter, err = os.Create(cmd.OutputFile)
 		if err != nil {
@@ -38,37 +39,45 @@ func (cmd *DumpCommand) Run(dispatcher *EsQueryDispatcher) (err error) {
 		cmd.OutputWriter = os.Stdout
 		log.Println("Output to stdout")
 	}
-	scrollRequest := &ScrollRequest{
-		Size: cmd.Size,
-		Sort: "_doc",
-	}
-	scrollResponse := &ScrollResponse{}
-
-	err, _ = dispatcher.ESRequest("POST", scrollUrl, scrollResponse, scrollRequest)
-	if err != nil {
-		return err
-	}
-	log.Println("Got scrollId : " + shellYellow(scrollResponse.ScrollId))
-	var totalHits int
-	if parsedTotalHits, parsedInt := scrollResponse.Hits.Total.(float64); parsedInt {
-		totalHits = int(parsedTotalHits)
-	} else {
-		totalHits = int(scrollResponse.Hits.Total.(map[string]interface{})["value"].(float64))
-	}
-	log.Println(fmt.Sprintf("Dumping %s documents :", shellYellow(totalHits)))
-	// Progress bar, yeaaah
-	bar := progressbar.Default(int64(totalHits))
 	jsonEncoder := json.NewEncoder(cmd.OutputWriter)
-	for _, hit := range scrollResponse.Hits.Hits {
-		bar.Add(1)
-		err = jsonEncoder.Encode(hit)
+
+	if cmd.ScrollId == "" {
+		scrollUrl := "/" + cmd.Index + "/_search?scroll=24h"
+		if len(cmd.QueryString) > 0 {
+			scrollUrl += "&q=" + url.QueryEscape(cmd.QueryString)
+		}
+		scrollRequest := &ScrollRequest{
+			Size: cmd.Size,
+			Sort: "_doc",
+		}
+		err, _ = dispatcher.ESRequest("POST", scrollUrl, scrollResponse, scrollRequest)
 		if err != nil {
 			return err
 		}
+		log.Println("Got scrollId : " + shellYellow(scrollResponse.ScrollId))
+		cmd.ScrollId = scrollResponse.ScrollId
+		if parsedTotalHits, parsedInt := scrollResponse.Hits.Total.(float64); parsedInt {
+			totalHits = int(parsedTotalHits)
+		} else {
+			totalHits = int(scrollResponse.Hits.Total.(map[string]interface{})["value"].(float64))
+		}
+		log.Println(fmt.Sprintf("Dumping %s documents :", shellYellow(totalHits)))
+		bar = progressbar.Default(int64(totalHits))
+		for _, hit := range scrollResponse.Hits.Hits {
+			bar.Add(1)
+			err = jsonEncoder.Encode(hit)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		log.Println("Resuming dump for scroll_id : " + shellYellow(cmd.ScrollId))
+		bar = progressbar.Default(-1)
 	}
+
 	scrollResumeRequest := &ScrollResume{
-		Scroll:   "5m",
-		ScrollId: scrollResponse.ScrollId,
+		Scroll:   "24h",
+		ScrollId: cmd.ScrollId,
 	}
 	// now we loop and do the same using our scrollID
 	for {
