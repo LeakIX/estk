@@ -1,4 +1,4 @@
-package main
+package lib
 
 import (
 	"bytes"
@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-var debugWriter = ioutil.Discard
+var DebugWriter = ioutil.Discard
 
 var httpClient = &http.Client{
 	Transport: &http.Transport{
@@ -82,14 +82,14 @@ func (disaptcher *EsQueryDispatcher) GetJSONObject(url string, target interface{
 		return err, nil
 	}
 	defer resp.Body.Close()
-	ioTee := io.TeeReader(resp.Body, debugWriter)
+	ioTee := io.TeeReader(resp.Body, DebugWriter)
 	jsonDecoder := json.NewDecoder(ioTee)
 	return jsonDecoder.Decode(target), resp
 }
 
 func (disaptcher *EsQueryDispatcher) PostJsonObject(url string, target interface{}, body interface{}) (err error, response *http.Response) {
 	jsonBody, err := json.Marshal(body)
-	if err != nil {
+	if err != nil || body == nil {
 		jsonBody = nil
 	}
 	req, err := http.NewRequest("POST", url, bytes.NewReader(jsonBody))
@@ -101,13 +101,14 @@ func (disaptcher *EsQueryDispatcher) PostJsonObject(url string, target interface
 	req.Header["kbn-xsrf"] = []string{"true"}
 	req.Header["kbn-version"] = []string{disaptcher.KibanaVersion}
 	req.Header["Content-Type"] = []string{"application/json"}
+
 	// use the http client to fetch the page
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return err, nil
 	}
 	defer resp.Body.Close()
-	ioTee := io.TeeReader(resp.Body, debugWriter)
+	ioTee := io.TeeReader(resp.Body, DebugWriter)
 	jsonDecoder := json.NewDecoder(ioTee)
 	return jsonDecoder.Decode(target), resp
 }

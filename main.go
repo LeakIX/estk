@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/LeakIX/estk/lib"
 	"github.com/alecthomas/kong"
 	"io/ioutil"
 	"log"
@@ -8,23 +9,25 @@ import (
 )
 
 var App struct {
-	List  LsCommand   `cmd help:"List indices"`
-	Dump  DumpCommand `cmd help:"Dump indices"`
-	Url   string      `required name:"url" help:"Base Kibana/ES url"`
-	Debug bool        `short:"d" help:"Debug mode" default:"false"`
+	List  lib.LsCommand   `cmd help:"List indices"`
+	Dump  lib.DumpCommand `cmd help:"Dump indices"`
+	Url   string          `required name:"url" help:"Base Kibana/ES url"`
+	Debug bool            `short:"d" help:"Debug mode" default:"false"`
 }
 
 func main() {
 	var err error
 	ctx := kong.Parse(&App)
-	queryDispatcher := &EsQueryDispatcher{
+	queryDispatcher := &lib.EsQueryDispatcher{
 		BaseUrl:   App.Url,
 		LogOutput: os.Stderr,
 	}
 	if !App.Debug {
 		queryDispatcher.LogOutput = ioutil.Discard
+	} else {
+		lib.DebugWriter = os.Stderr
+		log.SetOutput(queryDispatcher.LogOutput)
 	}
-	log.SetOutput(queryDispatcher.LogOutput)
 	err = queryDispatcher.DetectEsVersion()
 	if err != nil {
 		ctx.FatalIfErrorf(err)
