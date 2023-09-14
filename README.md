@@ -61,8 +61,7 @@ The installation is easy. You can download the pre-built binaries for your platf
 
 
 ```sh
-▶ GO111MODULE=on go get -u -v github.com/LeakIX/estk
-▶ ${GOPATH}/bin/estk -h
+▶ go install github.com/LeakIX/estk@master
 ```
 
 ## Running estk
